@@ -38,15 +38,16 @@ func RemoveFont(fontPath string) error {
 }
 
 func NotifyFontChange() error {
-	ret, err := SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0)
+	var result uintptr
+	ret, err := SendMessageTimeoutW(HWND_BROADCAST, WM_FONTCHANGE, 0, 0, SMTO_ABORTIFHUNG, 1, &result) // 1 ms timeout per window
 	if err != nil {
 		if dbg != nil {
-			dbg.Error(fmt.Sprintf("NotifyFontChange: SendMessageW(WM_FONTCHANGE) failed: return code=%d, error=%v", ret, err))
+			dbg.Error(fmt.Sprintf("NotifyFontChange: SendMessageTimeoutW(WM_FONTCHANGE) failed: return code=%v, error=%v", ret, err))
 		}
 		return err
 	}
 	if dbg != nil {
-		dbg.Info(fmt.Sprintf("NotifyFontChange: WM_FONTCHANGE broadcast sent successfully, return code=%d", ret))
+		dbg.Info(fmt.Sprintf("NotifyFontChange: WM_FONTCHANGE broadcast sent successfully, return code=%v, result=%v", ret, result))
 	}
 	return nil
 }

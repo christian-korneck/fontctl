@@ -44,6 +44,7 @@ var (
 	procAddFontResourceW     = modgdi32.NewProc("AddFontResourceW")
 	procGetFontResourceInfoW = modgdi32.NewProc("GetFontResourceInfoW")
 	procRemoveFontResourceW  = modgdi32.NewProc("RemoveFontResourceW")
+	procSendMessageTimeoutW  = moduser32.NewProc("SendMessageTimeoutW")
 	procSendMessageW         = moduser32.NewProc("SendMessageW")
 )
 
@@ -68,6 +69,15 @@ func GetFontResourceInfo(fontPath *uint16, bufferSize *uint32, buffer uintptr, q
 func RemoveFontResource(fontPath *uint16) (ret int32, err error) {
 	r0, _, e1 := syscall.Syscall(procRemoveFontResourceW.Addr(), 1, uintptr(unsafe.Pointer(fontPath)), 0, 0)
 	ret = int32(r0)
+	if ret == 0 {
+		err = errnoErr(e1)
+	}
+	return
+}
+
+func SendMessageTimeoutW(hWnd uintptr, msg uint32, wParam uintptr, lParam uintptr, fuFlags uintptr, uTimeout uintptr, lpdwResult *uintptr) (ret uintptr, err error) {
+	r0, _, e1 := syscall.Syscall9(procSendMessageTimeoutW.Addr(), 7, uintptr(hWnd), uintptr(msg), uintptr(wParam), uintptr(lParam), uintptr(fuFlags), uintptr(uTimeout), uintptr(unsafe.Pointer(lpdwResult)), 0, 0)
+	ret = uintptr(r0)
 	if ret == 0 {
 		err = errnoErr(e1)
 	}
